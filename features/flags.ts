@@ -6,20 +6,10 @@ export enum FeatureFlag {
   DOCUMENT_MANAGEMENT = "document-management",
 }
 
-export const featureFlagEvents: Record<FeatureFlag, { event: string }> = {
-  [FeatureFlag.MARKET_ANALYSIS]: {
-    event: "market-analysis",
-  },
-  [FeatureFlag.CALENDAR_MANAGEMENT]: {
-    event: "calendar-management",
-  },
-  [FeatureFlag.EMAIL_MANAGEMENT]: {
-    event: "email-management",
-  },
-  [FeatureFlag.REPORT_GENERATION]: {
-    event: "report-generation",
-  },
-  [FeatureFlag.DOCUMENT_MANAGEMENT]: {
-    event: "document-management",
-  },
+export const featureFlagEvents = {
+  [FeatureFlag.MARKET_ANALYSIS]: "market-analysis",
+  [FeatureFlag.CALENDAR_MANAGEMENT]: "calendar-management",
+  [FeatureFlag.EMAIL_MANAGEMENT]: "email-management",
+  [FeatureFlag.REPORT_GENERATION]: "report-generation",
+  [FeatureFlag.DOCUMENT_MANAGEMENT]: "document-management",
 };

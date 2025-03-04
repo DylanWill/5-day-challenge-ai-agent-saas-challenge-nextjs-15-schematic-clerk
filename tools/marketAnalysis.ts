@@ -1,12 +1,15 @@
 import { z } from "zod";
 import { tool } from "ai";
 
-// This would be a real API call in a production environment
-async function fetchMarketData(location: string, propertyType?: string) {
-  // Mock data for demonstration purposes
+// Mock function to fetch market data
+async function fetchMarketData(location: string, propertyType: string = "All") {
+  // In a real implementation, this would call a real estate market data API
+  console.log(`Fetching market data for ${location}, property type: ${propertyType}`);
+  
+  // Mock response with market trends
   return {
     location,
-    propertyType: propertyType || "All",
+    propertyType,
     medianPrice: "$750,000",
     priceChange: "+5.2%",
     avgDaysOnMarket: 18,
@@ -15,21 +18,21 @@ async function fetchMarketData(location: string, propertyType?: string) {
   };
 }
 
-const marketAnalysisTool = tool({
+// AI Tool for market analysis
+export const marketAnalysisTool = tool({
+  name: "getMarketTrends",
   description: "Get real estate market trends for a specific area",
   parameters: z.object({
-    location: z.string().describe("The location to get market trends for"),
-    propertyType: z.string().optional().describe("The type of property (e.g., single-family, condo, etc.)"),
+    location: z.string().describe("The location/area to get market trends for"),
+    propertyType: z.string().optional().describe("Optional property type filter (e.g., Single Family, Condo, etc.)"),
   }),
   execute: async ({ location, propertyType }) => {
     try {
       const marketData = await fetchMarketData(location, propertyType);
       return marketData;
     } catch (error) {
-      console.error("Error fetching market data:", error);
-      throw new Error("Failed to fetch market data. Please try again later.");
+      console.error("Error in market analysis tool:", error);
+      throw new Error("Failed to fetch market data. Please try again or contact support.");
     }
   },
-});
-
-export default marketAnalysisTool; 
+}); 

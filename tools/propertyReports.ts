@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { tool } from "ai";
 
-// This would be a real API call to property data services in a production environment
+// Mock function to generate a property report
 async function generatePropertyReport(
   address: string,
   propertyType: string,
@@ -9,85 +9,115 @@ async function generatePropertyReport(
   bathrooms: number,
   squareFeet: number
 ) {
-  // Mock data for demonstration purposes
+  // In a real implementation, this would call a real estate data API
+  console.log(`Generating property report for ${address}`);
+  
+  // Mock response with property analysis
   return {
-    address,
-    propertyType,
-    bedrooms,
-    bathrooms,
-    squareFeet,
-    estimatedValue: "$" + (750000 + (Math.random() * 100000)).toFixed(0),
+    property: {
+      address,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      squareFeet,
+      estimatedValue: `$${(750000 + (bedrooms * 50000) + (bathrooms * 25000) + (squareFeet * 200)).toLocaleString()}`,
+    },
     comparableProperties: [
       {
-        address: "123 Nearby St",
-        soldPrice: "$" + (735000 + (Math.random() * 50000)).toFixed(0),
-        soldDate: "2023-05-15",
+        address: "456 Oak Ave, Anytown, USA",
+        soldPrice: "$785,000",
+        soldDate: "2023-01-15",
+        squareFeet: squareFeet - 200,
         bedrooms,
         bathrooms,
-        squareFeet: squareFeet - 100,
       },
       {
-        address: "456 Close Ave",
-        soldPrice: "$" + (765000 + (Math.random() * 50000)).toFixed(0),
-        soldDate: "2023-04-22",
-        bedrooms,
-        bathrooms,
+        address: "789 Pine St, Anytown, USA",
+        soldPrice: "$810,000",
+        soldDate: "2023-02-20",
         squareFeet: squareFeet + 150,
+        bedrooms,
+        bathrooms: bathrooms + 0.5,
+      },
+      {
+        address: "321 Elm St, Anytown, USA",
+        soldPrice: "$750,000",
+        soldDate: "2023-03-10",
+        squareFeet: squareFeet - 100,
+        bedrooms: bedrooms - 1,
+        bathrooms,
       },
     ],
     marketTrends: {
-      medianPrice: "$750,000",
-      priceChange: "+5.2%",
-      avgDaysOnMarket: 18,
-      inventory: 45,
+      medianPrice: "$775,000",
+      priceChange: "+4.8%",
+      avgDaysOnMarket: 22,
+      inventory: 38,
     },
-    reportId: "cma-" + Math.random().toString(36).substring(2, 10),
+    reportId: "report_" + Date.now(),
     timestamp: new Date().toISOString(),
   };
 }
 
-// This would generate a chart URL in a real implementation
-async function generateChartUrl(data: any) {
+// Mock function to generate a chart URL
+async function generateChartUrl(reportData: any, chartType: string) {
+  // In a real implementation, this would call a chart generation service
+  console.log(`Generating ${chartType} chart for property report`);
+  
   // Mock chart URL
-  return "https://quickchart.io/chart?c={type:'bar',data:{labels:['Your Property','Comp 1','Comp 2'],datasets:[{label:'Price',data:[750000,735000,765000]}]}}";
+  return `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify({
+    type: chartType,
+    data: {
+      labels: ['Your Property', 'Comp 1', 'Comp 2', 'Comp 3'],
+      datasets: [{
+        label: 'Estimated Value',
+        data: [
+          parseInt(reportData.property.estimatedValue.replace(/[^0-9]/g, '')),
+          parseInt(reportData.comparableProperties[0].soldPrice.replace(/[^0-9]/g, '')),
+          parseInt(reportData.comparableProperties[1].soldPrice.replace(/[^0-9]/g, '')),
+          parseInt(reportData.comparableProperties[2].soldPrice.replace(/[^0-9]/g, '')),
+        ],
+        backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 206, 86, 0.5)', 'rgba(75, 192, 192, 0.5)'],
+      }]
+    }
+  }))}`;
 }
 
-const propertyReportTool = tool({
+// AI Tool for property report generation
+export const propertyReportTool = tool({
+  name: "generatePropertyReport",
   description: "Generate a comparative market analysis report for a property",
   parameters: z.object({
-    address: z.string().describe("The address of the property"),
-    propertyType: z.string().describe("The type of property"),
+    address: z.string().describe("Address of the property"),
+    propertyType: z.string().describe("Type of property (e.g., Single Family, Condo, etc.)"),
     bedrooms: z.number().describe("Number of bedrooms"),
     bathrooms: z.number().describe("Number of bathrooms"),
     squareFeet: z.number().describe("Square footage of the property"),
-    includeCharts: z.boolean().optional().describe("Whether to include charts in the report"),
+    includeCharts: z.boolean().optional().describe("Whether to include charts in the report (default: false)"),
   }),
-  execute: async ({ address, propertyType, bedrooms, bathrooms, squareFeet, includeCharts = true }) => {
+  execute: async ({ address, propertyType, bedrooms, bathrooms, squareFeet, includeCharts = false }) => {
     try {
       // Generate the property report
-      const report = await generatePropertyReport(
-        address,
-        propertyType,
-        bedrooms,
-        bathrooms,
-        squareFeet
-      );
+      const report = await generatePropertyReport(address, propertyType, bedrooms, bathrooms, squareFeet);
       
       // Generate charts if requested
       if (includeCharts) {
-        const chartUrl = await generateChartUrl(report);
+        const priceComparisonChart = await generateChartUrl(report, 'bar');
+        const marketTrendsChart = await generateChartUrl(report, 'line');
+        
         return {
           ...report,
-          chartUrl,
+          charts: {
+            priceComparison: priceComparisonChart,
+            marketTrends: marketTrendsChart,
+          },
         };
       }
       
       return report;
     } catch (error) {
-      console.error("Error generating property report:", error);
-      throw new Error("Failed to generate property report. Please try again later.");
+      console.error("Error in property report tool:", error);
+      throw new Error("Failed to generate property report. Please try again or contact support.");
     }
   },
-});
-
-export default propertyReportTool; 
+}); 
