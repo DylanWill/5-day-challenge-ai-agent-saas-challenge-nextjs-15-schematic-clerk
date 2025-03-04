@@ -1,81 +1,106 @@
-# AI Content Agent
+# Real Estate Agent AI Assistant
 
-This is an AI-powered content analysis platform that helps content creators get insights from their YouTube videos. The platform uses advanced AI to analyze video content, generate transcriptions, create thumbnails, and provide content recommendations.
-
-Repository: [https://github.com/sonnysangha/5-day-challenge-ai-agent-saas-challenge-nextjs-15-schematic-clerk.git](https://github.com/sonnysangha/5-day-challenge-ai-agent-saas-challenge-nextjs-15-schematic-clerk.git)
+A powerful web application that integrates AI agentic tools to help real estate agents automate time-consuming tasks and enhance their productivity.
 
 ## Features
 
-- **AI Video Analysis** - Deep insights into your video content with advanced AI analysis
-- **Smart Transcription** - Accurate transcriptions of your videos for subtitles or repurposing content
-- **Thumbnail Generation** - AI-generated eye-catching thumbnails to boost click-through rates
-- **Title Generation** - SEO-optimized title suggestions that resonate with your audience
-- **Shot Script** - Detailed instructions to recreate viral videos with shooting techniques and editing tips
-- **AI Agent Conversations** - Engage in discussions about content strategy with your AI agent companion
+### Calendar Management
+- AI-powered scheduling and appointment management
+- Smart reminders and notifications
+- Conflict detection and resolution
+- Integration with popular calendar services (Google Calendar, Outlook)
+
+### Email Management
+- Smart inbox organization and prioritization
+- AI-powered email drafting and responses
+- Email categorization and tagging
+- Follow-up reminders and tracking
+
+### Market Analysis
+- Real-time property market trends from Redfin and Zillow
+- Comparative market analysis (CMA) reports
+- Neighborhood insights and statistics
+- Price trend forecasting
+
+### Client Reports
+- Automated property comparison reports
+- Data visualization with interactive charts and graphs
+- Customizable report templates
+- Easy sharing options (PDF, email, link)
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15, React 19, TailwindCSS
-- **AI Integration**: AI SDK, Anthropic, OpenAI
 - **Authentication**: Clerk
 - **Database**: Convex
-- **Styling**: Tailwind CSS, Radix UI components
-- **YouTube Integration**: youtubei.js for video data extraction
-
-## Project Structure
-
-- `/app` - Next.js app directory with pages and layouts
-- `/components` - Reusable UI components
-- `/convex` - Database models and schema
-- `/actions` - Server actions for form handling and business logic
-- `/lib` - Utility functions and helper methods
-- `/features` - Feature flag configurations
-- `/public` - Static assets
-
-## Data Model
-
-The application stores:
-
-- YouTube video IDs linked to users
-- Video transcripts with timestamps
-- Generated images/thumbnails
-- Custom generated titles
+- **AI Integration**: Claude API, OpenAI API
+- **Feature Management**: Schematic
+- **Data Visualization**: QuickChart API
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies with `pnpm install`
+3. Set up environment variables (see `.env.example`)
+4. Run the development server with `pnpm dev`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in the required values:
+
+```
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+
+# Schematic
+NEXT_PUBLIC_SCHEMATIC_PUBLISHABLE_KEY=
+SCHEMATIC_API_KEY=
+
+# Deployment used by `npx convex dev`
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
+
+# Claude API
+CLAUDE_API_KEY=
+
+# OpenAI API
+OPENAI_API_KEY=
+
+# Redfin API (for market data)
+REDFIN_API_KEY=
+
+# Zillow API (for market data)
+ZILLOW_API_KEY=
+
+# QuickChart API (for visualizations)
+QUICKCHART_API_KEY=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+/
+├── app/                  # Next.js app directory
+│   ├── api/              # API routes
+│   ├── calendar/         # Calendar management pages
+│   ├── email/            # Email management pages
+│   ├── market-analysis/  # Market analysis pages
+│   ├── reports/          # Client report pages
+│   └── page.tsx          # Home page
+├── components/           # React components
+│   ├── ui/               # UI components
+│   ├── calendar/         # Calendar components
+│   ├── email/            # Email components
+│   ├── market/           # Market analysis components
+│   └── reports/          # Report components
+├── lib/                  # Utility functions
+├── actions/              # Server actions
+├── tools/                # AI agent tools
+├── convex/               # Convex database schema and functions
+└── public/               # Static assets
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## License
 
-## Environment Setup
-
-The project requires several environment variables to be set up. Check `.env.example` for required configurations.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

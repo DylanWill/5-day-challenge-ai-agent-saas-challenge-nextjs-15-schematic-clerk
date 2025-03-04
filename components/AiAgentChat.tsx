@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import ReactMarkdown from "react-markdown";
 import { useSchematicFlag } from "@schematichq/schematic-react";
 import { FeatureFlag } from "@/features/flags";
-import { BotIcon, ImageIcon, LetterText, PenIcon } from "lucide-react";
+import { BarChart3, BotIcon, Calendar, Mail } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -25,7 +25,7 @@ const formatToolInvocation = (part: ToolPart) => {
   return `🔧 Tool Used: ${part.toolInvocation.toolName}`;
 };
 
-function AiAgentChat({ videoId }: { videoId: string }) {
+function AiAgentChat({ context }: { context?: string }) {
   // Scrolling to Bottom Logic
   const bottomRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -34,20 +34,22 @@ function AiAgentChat({ videoId }: { videoId: string }) {
     useChat({
       maxSteps: 5,
       body: {
-        videoId,
+        context,
       },
     });
 
-  const isScriptGenerationEnabled = useSchematicFlag(
-    FeatureFlag.SCRIPT_GENERATION
+  const isMarketAnalysisEnabled = useSchematicFlag(
+    FeatureFlag.MARKET_ANALYSIS
   );
-  const isImageGenerationEnabled = useSchematicFlag(
-    FeatureFlag.IMAGE_GENERATION
+  const isCalendarManagementEnabled = useSchematicFlag(
+    FeatureFlag.CALENDAR_MANAGEMENT
   );
-  const isTitleGenerationEnabled = useSchematicFlag(
-    FeatureFlag.TITLE_GENERATIONS
+  const isEmailManagementEnabled = useSchematicFlag(
+    FeatureFlag.EMAIL_MANAGEMENT
   );
-  const isVideoAnalysisEnabled = useSchematicFlag(FeatureFlag.ANALYSE_VIDEO);
+  const isReportGenerationEnabled = useSchematicFlag(
+    FeatureFlag.REPORT_GENERATION
+  );
 
   useEffect(() => {
     if (bottomRef.current && messagesContainerRef.current) {
@@ -80,39 +82,39 @@ function AiAgentChat({ videoId }: { videoId: string }) {
         break;
       case "ready":
         toast.dismiss(toastId);
-
         break;
     }
   }, [status]);
 
-  const generateScript = async () => {
+  const generateMarketAnalysis = async () => {
     const randomId = Math.random().toString(36).substring(2, 15);
-
     const userMessage: Message = {
-      id: `generate-script-${randomId}`,
+      id: `market-analysis-${randomId}`,
       role: "user",
       content:
-        "Generate a step-by-step shooting script for this video that I can use on my own channel to produce a video that is similar to this one, dont do any other steps such as generating a image, just generate the script only!",
+        "Generate a market analysis for Downtown area. I'm interested in single-family homes.",
     };
     append(userMessage);
   };
 
-  const generateImage = async () => {
+  const scheduleAppointment = async () => {
     const randomId = Math.random().toString(36).substring(2, 15);
     const userMessage: Message = {
-      id: `generate-image-${randomId}`,
+      id: `schedule-appointment-${randomId}`,
       role: "user",
-      content: "Generate a thumbnail for this video",
+      content:
+        "Schedule a property showing for 123 Main St with John Smith tomorrow at 2:00 PM for 1 hour.",
     };
     append(userMessage);
   };
 
-  const generateTitle = async () => {
+  const draftClientEmail = async () => {
     const randomId = Math.random().toString(36).substring(2, 15);
     const userMessage: Message = {
-      id: `generate-title-${randomId}`,
+      id: `draft-email-${randomId}`,
       role: "user",
-      content: "Generate a title for this video",
+      content:
+        "Draft an email to Sarah Johnson at sarah.johnson@example.com about the offer we received for 456 Oak Ave.",
     };
     append(userMessage);
   };
@@ -120,7 +122,7 @@ function AiAgentChat({ videoId }: { videoId: string }) {
   return (
     <div className="flex flex-col h-full">
       <div className="hidden lg:block px-4 pb-3 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800">AI Agent</h2>
+        <h2 className="text-lg font-semibold text-gray-800">AI Assistant</h2>
       </div>
 
       {/* Messages */}
@@ -133,10 +135,10 @@ function AiAgentChat({ videoId }: { videoId: string }) {
             <div className="flex items-center justify-center h-full min-h-[200px]">
               <div className="text-center space-y-2">
                 <h3 className="text-lg font-medium text-gray-700">
-                  Welcome to AI Agent Chat
+                  Welcome to Real Estate AI Assistant
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Ask any question about your video!
+                  Ask any question about real estate, schedule appointments, draft emails, or generate reports!
                 </p>
               </div>
             </div>
@@ -201,21 +203,13 @@ function AiAgentChat({ videoId }: { videoId: string }) {
             <input
               className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               type="text"
-              placeholder={
-                !isVideoAnalysisEnabled
-                  ? "Upgrade to ask anything about your video..."
-                  : "Ask anything about your video..."
-              }
+              placeholder="Ask anything about real estate..."
               value={input}
               onChange={handleInputChange}
             />
             <Button
               type="submit"
-              disabled={
-                status === "streaming" ||
-                status === "submitted" ||
-                !isVideoAnalysisEnabled
-              }
+              disabled={status === "streaming" || status === "submitted"}
               className="px-4 py-2 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === "streaming"
@@ -229,36 +223,44 @@ function AiAgentChat({ videoId }: { videoId: string }) {
           <div className="flex gap-2">
             <button
               className="text-xs xl:text-sm w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={generateScript}
+              onClick={generateMarketAnalysis}
               type="button"
-              disabled={!isScriptGenerationEnabled}
+              disabled={!isMarketAnalysisEnabled}
             >
-              <LetterText className="w-4 h-4" />
-              {isScriptGenerationEnabled ? (
-                <span>Generate Script</span>
+              <BarChart3 className="w-4 h-4" />
+              {isMarketAnalysisEnabled ? (
+                <span>Market Analysis</span>
               ) : (
-                <span>Upgrade to generate a script</span>
+                <span>Upgrade for Market Analysis</span>
               )}
             </button>
 
             <button
               className="text-xs xl:text-sm w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={generateTitle}
+              onClick={scheduleAppointment}
               type="button"
-              disabled={!isTitleGenerationEnabled}
+              disabled={!isCalendarManagementEnabled}
             >
-              <PenIcon className="w-4 h-4" />
-              Generate Title
+              <Calendar className="w-4 h-4" />
+              {isCalendarManagementEnabled ? (
+                <span>Schedule Appointment</span>
+              ) : (
+                <span>Upgrade for Calendar</span>
+              )}
             </button>
 
             <button
               className="text-xs xl:text-sm w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={generateImage}
+              onClick={draftClientEmail}
               type="button"
-              disabled={!isImageGenerationEnabled}
+              disabled={!isEmailManagementEnabled}
             >
-              <ImageIcon className="w-4 h-4" />
-              Generate Image
+              <Mail className="w-4 h-4" />
+              {isEmailManagementEnabled ? (
+                <span>Draft Email</span>
+              ) : (
+                <span>Upgrade for Email</span>
+              )}
             </button>
           </div>
         </div>

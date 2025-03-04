@@ -1,25 +1,25 @@
 export enum FeatureFlag {
-  TRANSCRIPTION = "transcription",
-  IMAGE_GENERATION = "image-generation",
-  ANALYSE_VIDEO = "analyse-video",
-  TITLE_GENERATIONS = "title-generations",
-  SCRIPT_GENERATION = "script-generation",
+  MARKET_ANALYSIS = "market-analysis",
+  CALENDAR_MANAGEMENT = "calendar-management",
+  EMAIL_MANAGEMENT = "email-management",
+  REPORT_GENERATION = "report-generation",
+  DOCUMENT_MANAGEMENT = "document-management",
 }
 
 export const featureFlagEvents: Record<FeatureFlag, { event: string }> = {
-  [FeatureFlag.TRANSCRIPTION]: {
-    event: "transcribe",
+  [FeatureFlag.MARKET_ANALYSIS]: {
+    event: "market-analysis",
   },
-  [FeatureFlag.IMAGE_GENERATION]: {
-    event: "generate-image",
+  [FeatureFlag.CALENDAR_MANAGEMENT]: {
+    event: "calendar-management",
   },
-  [FeatureFlag.ANALYSE_VIDEO]: {
-    event: "analyse-video",
+  [FeatureFlag.EMAIL_MANAGEMENT]: {
+    event: "email-management",
   },
-  [FeatureFlag.TITLE_GENERATIONS]: {
-    event: "generate-title",
+  [FeatureFlag.REPORT_GENERATION]: {
+    event: "report-generation",
   },
-  [FeatureFlag.SCRIPT_GENERATION]: {
-    event: "",
+  [FeatureFlag.DOCUMENT_MANAGEMENT]: {
+    event: "document-management",
   },
 };
