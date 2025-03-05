@@ -1,41 +1,30 @@
-# Real Estate Agent AI Assistant
+# Real Estate Agent Platform
 
-A powerful web application that integrates AI agentic tools to help real estate agents automate time-consuming tasks and enhance their productivity.
+A comprehensive platform for real estate agents to manage their business, including:
+
+- Document management with OCR and Google Drive integration
+- Market analysis tools
+- Email management
+- Property reports generation
+- Calendar management
+- AI assistant for real estate tasks
 
 ## Features
 
-### Calendar Management
-- AI-powered scheduling and appointment management
-- Smart reminders and notifications
-- Conflict detection and resolution
-- Integration with popular calendar services (Google Calendar, Outlook)
+- **Dashboard**: Central hub for quick stats, upcoming appointments, recent emails, market updates, and tasks
+- **Document Management**: Upload, process, and organize documents with OCR capabilities
+- **Market Analysis**: Get real-time market trends and property data
+- **Email Management**: Draft and categorize emails for clients
+- **Property Reports**: Generate comparative market analysis reports
+- **Calendar Management**: Schedule and manage appointments
 
-### Email Management
-- Smart inbox organization and prioritization
-- AI-powered email drafting and responses
-- Email categorization and tagging
-- Follow-up reminders and tracking
+## Technologies Used
 
-### Market Analysis
-- Real-time property market trends from Redfin and Zillow
-- Comparative market analysis (CMA) reports
-- Neighborhood insights and statistics
-- Price trend forecasting
-
-### Client Reports
-- Automated property comparison reports
-- Data visualization with interactive charts and graphs
-- Customizable report templates
-- Easy sharing options (PDF, email, link)
-
-## Tech Stack
-
-- **Frontend**: Next.js 15, React 19, TailwindCSS
-- **Authentication**: Clerk
-- **Database**: Convex
-- **AI Integration**: Claude API, OpenAI API
-- **Feature Management**: Schematic
-- **Data Visualization**: QuickChart API
+- Next.js 15
+- Clerk for authentication
+- Schematic for feature flags
+- Anthropic Claude for AI capabilities
+- Tailwind CSS for styling
 
 ## Getting Started
 
