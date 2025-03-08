@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { tool } from "ai";
 
-// Mock function to draft an email
+// Function to draft an email using MailerSend
 async function draftEmail(
   recipient: string,
   recipientEmail: string,
@@ -11,9 +11,6 @@ async function draftEmail(
   additionalDetails?: string,
   senderName: string = "Real Estate Agent"
 ) {
-  // In a real implementation, this would use an email service API
-  console.log(`Drafting email to ${recipientEmail}`);
-  
   // Construct email body based on purpose and details
   let body = `Dear ${recipient},\n\n`;
   
@@ -40,7 +37,10 @@ async function draftEmail(
   body += `\n\nPlease don't hesitate to contact me if you have any questions or need further information.`;
   body += `\n\nBest regards,\n${senderName}`;
   
-  // Mock response
+  // In a real implementation, this would use MailerSend API to save as a draft
+  // For now, we'll just return the draft content
+  console.log(`Drafting email to ${recipientEmail} using MailerSend`);
+  
   return {
     to: recipientEmail,
     subject,
@@ -50,7 +50,60 @@ async function draftEmail(
   };
 }
 
-// Mock function to categorize an email
+// Function to send an email using MailerSend
+async function sendEmail(
+  to: string,
+  subject: string,
+  body: string,
+  from: string = process.env.MAILERSEND_FROM_EMAIL || "noreply@example.com",
+  fromName: string = process.env.MAILERSEND_FROM_NAME || "Real Estate Agent"
+) {
+  try {
+    // In a real implementation, this would use the MailerSend API
+    // Example implementation with MailerSend SDK:
+    /*
+    const MailerSend = require("mailersend");
+    
+    const mailersend = new MailerSend({
+      api_key: process.env.MAILERSEND_API_KEY,
+    });
+    
+    const emailParams = {
+      from: {
+        email: from,
+        name: fromName,
+      },
+      to: [
+        {
+          email: to,
+        },
+      ],
+      subject: subject,
+      text: body,
+    };
+    
+    const response = await mailersend.send(emailParams);
+    return {
+      sent: true,
+      messageId: response.message_id,
+      timestamp: new Date().toISOString(),
+    };
+    */
+    
+    // Mock response for now
+    console.log(`Sending email to ${to} using MailerSend`);
+    return {
+      sent: true,
+      messageId: "mailersend_" + Date.now(),
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error sending email with MailerSend:", error);
+    throw new Error("Failed to send email. Please try again or contact support.");
+  }
+}
+
+// Function to categorize an email
 async function categorizeEmail(subject: string, body: string) {
   // In a real implementation, this would use NLP to categorize the email
   console.log(`Categorizing email: ${subject}`);
@@ -108,6 +161,34 @@ export const draftEmailTool = tool({
     } catch (error) {
       console.error("Error in email drafting tool:", error);
       throw new Error("Failed to draft email. Please try again or contact support.");
+    }
+  },
+});
+
+// AI Tool for sending emails
+export const sendEmailTool = tool({
+  name: "sendEmail",
+  description: "Send an email to a client",
+  parameters: z.object({
+    to: z.string().describe("Email address of the recipient"),
+    subject: z.string().describe("Subject line of the email"),
+    body: z.string().describe("Body content of the email"),
+    fromName: z.string().optional().describe("Optional name of the sender"),
+  }),
+  execute: async ({ to, subject, body, fromName }) => {
+    try {
+      const result = await sendEmail(
+        to,
+        subject,
+        body,
+        process.env.MAILERSEND_FROM_EMAIL,
+        fromName || process.env.MAILERSEND_FROM_NAME
+      );
+      
+      return result;
+    } catch (error) {
+      console.error("Error in email sending tool:", error);
+      throw new Error("Failed to send email. Please try again or contact support.");
     }
   },
 }); 

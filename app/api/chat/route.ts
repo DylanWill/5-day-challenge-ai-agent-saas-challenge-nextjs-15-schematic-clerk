@@ -2,9 +2,23 @@ import { NextResponse } from "next/server";
 import { createAnthropic } from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { currentUser } from "@clerk/nextjs";
-import { marketAnalysisTool } from "@/tools/marketAnalysis";
+import { 
+  marketAnalysisTool, 
+  propertyDetailsTool, 
+  propertyFloorPlanTool,
+  propertyExtendedSearchTool,
+  propertyByPolygonTool,
+  rentEstimateTool,
+  locationSuggestionsTool,
+  redfinRentalPropertiesTool,
+  redfinPropertiesForSaleTool,
+  redfinPropertyDetailsTool,
+  attomPropertyDetailsTool,
+  attomPropertyValuationTool,
+  attomSalesHistoryTool
+} from "@/tools/marketAnalysis";
 import { scheduleAppointmentTool } from "@/tools/calendarManagement";
-import { draftEmailTool } from "@/tools/emailManagement";
+import { draftEmailTool, sendEmailTool } from "@/tools/emailManagement";
 import { propertyReportTool } from "@/tools/propertyReports";
 import {
   documentProcessingTool,
@@ -31,7 +45,7 @@ export async function POST(req: Request) {
       apiKey: process.env.CLAUDE_API_KEY || "",
     });
 
-    const systemMessage = `You are an AI assistant for real estate agents. You help with calendar management, email organization, market analysis, client report generation, and document management. You're friendly, professional, and use emojis occasionally to be engaging. 
+    const systemMessage = `You are an AI assistant for real estate agents. You help with calendar management, email organization, market analysis, client report generation, and document management. You can also fetch property details, floor plans, and search for properties on Zillow, search for properties on Redfin, as well as comprehensive property data, valuations, and sales history from ATTOM Data. You're friendly, professional, and use emojis occasionally to be engaging. 
 
 Current context: ${context || "general assistance"}
 
@@ -50,6 +64,66 @@ Today's date is ${new Date().toLocaleDateString()}.`;
           input_schema: marketAnalysisTool.schema,
         },
         {
+          name: "getPropertyDetails",
+          description: "Get detailed information about a specific property from Zillow",
+          input_schema: propertyDetailsTool.schema,
+        },
+        {
+          name: "getPropertyFloorPlan",
+          description: "Get floor plan images for a specific property from Zillow",
+          input_schema: propertyFloorPlanTool.schema,
+        },
+        {
+          name: "getPropertyExtendedSearch",
+          description: "Search for properties with extended filters using Zillow",
+          input_schema: propertyExtendedSearchTool.schema,
+        },
+        {
+          name: "getPropertyByPolygon",
+          description: "Search for properties within a geographic polygon using Zillow",
+          input_schema: propertyByPolygonTool.schema,
+        },
+        {
+          name: "getRentEstimate",
+          description: "Get a rent estimate for a property from Zillow",
+          input_schema: rentEstimateTool.schema,
+        },
+        {
+          name: "getLocationSuggestions",
+          description: "Get location suggestions based on a search query from Zillow",
+          input_schema: locationSuggestionsTool.schema,
+        },
+        {
+          name: "getRedfinRentalProperties",
+          description: "Search for rental properties in a specific region using Redfin",
+          input_schema: redfinRentalPropertiesTool.schema,
+        },
+        {
+          name: "getRedfinPropertiesForSale",
+          description: "Search for properties for sale in a specific region using Redfin",
+          input_schema: redfinPropertiesForSaleTool.schema,
+        },
+        {
+          name: "getRedfinPropertyDetails",
+          description: "Get detailed information about a specific property from Redfin",
+          input_schema: redfinPropertyDetailsTool.schema,
+        },
+        {
+          name: "getAttomPropertyDetails",
+          description: "Get comprehensive property details from ATTOM Data",
+          input_schema: attomPropertyDetailsTool.schema,
+        },
+        {
+          name: "getAttomPropertyValuation",
+          description: "Get automated valuation model (AVM) data for a property from ATTOM",
+          input_schema: attomPropertyValuationTool.schema,
+        },
+        {
+          name: "getAttomSalesHistory",
+          description: "Get sales history for a property from ATTOM Data",
+          input_schema: attomSalesHistoryTool.schema,
+        },
+        {
           name: "scheduleAppointment",
           description: "Schedule an appointment on the agent's calendar",
           input_schema: scheduleAppointmentTool.schema,
@@ -58,6 +132,11 @@ Today's date is ${new Date().toLocaleDateString()}.`;
           name: "draftEmail",
           description: "Draft an email for a client",
           input_schema: draftEmailTool.schema,
+        },
+        {
+          name: "sendEmail",
+          description: "Send an email to a client",
+          input_schema: sendEmailTool.schema,
         },
         {
           name: "generatePropertyReport",
@@ -120,10 +199,36 @@ Today's date is ${new Date().toLocaleDateString()}.`;
             try {
               if (toolCall.name === "getMarketTrends") {
                 result = await marketAnalysisTool.execute(toolCall.input);
+              } else if (toolCall.name === "getPropertyDetails") {
+                result = await propertyDetailsTool.execute(toolCall.input);
+              } else if (toolCall.name === "getPropertyFloorPlan") {
+                result = await propertyFloorPlanTool.execute(toolCall.input);
+              } else if (toolCall.name === "getPropertyExtendedSearch") {
+                result = await propertyExtendedSearchTool.execute(toolCall.input);
+              } else if (toolCall.name === "getPropertyByPolygon") {
+                result = await propertyByPolygonTool.execute(toolCall.input);
+              } else if (toolCall.name === "getRentEstimate") {
+                result = await rentEstimateTool.execute(toolCall.input);
+              } else if (toolCall.name === "getLocationSuggestions") {
+                result = await locationSuggestionsTool.execute(toolCall.input);
+              } else if (toolCall.name === "getRedfinRentalProperties") {
+                result = await redfinRentalPropertiesTool.execute(toolCall.input);
+              } else if (toolCall.name === "getRedfinPropertiesForSale") {
+                result = await redfinPropertiesForSaleTool.execute(toolCall.input);
+              } else if (toolCall.name === "getRedfinPropertyDetails") {
+                result = await redfinPropertyDetailsTool.execute(toolCall.input);
+              } else if (toolCall.name === "getAttomPropertyDetails") {
+                result = await attomPropertyDetailsTool.execute(toolCall.input);
+              } else if (toolCall.name === "getAttomPropertyValuation") {
+                result = await attomPropertyValuationTool.execute(toolCall.input);
+              } else if (toolCall.name === "getAttomSalesHistory") {
+                result = await attomSalesHistoryTool.execute(toolCall.input);
               } else if (toolCall.name === "scheduleAppointment") {
                 result = await scheduleAppointmentTool.execute(toolCall.input);
               } else if (toolCall.name === "draftEmail") {
                 result = await draftEmailTool.execute(toolCall.input);
+              } else if (toolCall.name === "sendEmail") {
+                result = await sendEmailTool.execute(toolCall.input);
               } else if (toolCall.name === "generatePropertyReport") {
                 result = await propertyReportTool.execute(toolCall.input);
               } else if (toolCall.name === "processRealEstateDocument") {

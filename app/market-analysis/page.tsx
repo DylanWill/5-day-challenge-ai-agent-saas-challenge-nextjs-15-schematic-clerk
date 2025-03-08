@@ -139,6 +139,10 @@ export default function MarketAnalysisPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [propertyAddress, setPropertyAddress] = useState("");
+  const [isSearchingProperty, setIsSearchingProperty] = useState(false);
+  const [selectedDataSource, setSelectedDataSource] = useState<"zillow" | "redfin" | "attom">("zillow");
+  const [redfinRegionId, setRedfinRegionId] = useState("6_13410"); // Default to a sample region ID
 
   // Filter market trends based on search term and neighborhood
   const filteredMarketTrends = mockMarketTrends.filter(
@@ -154,6 +158,19 @@ export default function MarketAnalysisPage() {
         listing.neighborhood.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (!selectedNeighborhood || listing.neighborhood === selectedNeighborhood)
   );
+
+  // Function to handle property search
+  const handlePropertySearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (propertyAddress.trim() || (selectedDataSource === "redfin" && redfinRegionId.trim())) {
+      setIsSearchingProperty(true);
+      // In a real implementation, this would call the selected API (Zillow, Redfin, or ATTOM)
+      // For now, we'll just simulate a search
+      setTimeout(() => {
+        setIsSearchingProperty(false);
+      }, 1500);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -218,6 +235,155 @@ export default function MarketAnalysisPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+            </div>
+
+            {/* Property Search */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Property Search</h2>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedDataSource("zillow")}
+                      className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1 ${
+                        selectedDataSource === "zillow"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <Home className="w-3 h-3" />
+                      Zillow
+                    </button>
+                    <button
+                      onClick={() => setSelectedDataSource("redfin")}
+                      className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1 ${
+                        selectedDataSource === "redfin"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <Home className="w-3 h-3" />
+                      Redfin
+                    </button>
+                    <button
+                      onClick={() => setSelectedDataSource("attom")}
+                      className={`px-3 py-1 rounded-lg text-sm flex items-center gap-1 ${
+                        selectedDataSource === "attom"
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <BarChart3 className="w-3 h-3" />
+                      ATTOM
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <form onSubmit={handlePropertySearch} className="mb-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  {selectedDataSource === "redfin" ? (
+                    <div className="relative flex-grow">
+                      <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Enter Redfin region ID (e.g., '6_13410')"
+                        className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={redfinRegionId}
+                        onChange={(e) => setRedfinRegionId(e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative flex-grow">
+                      <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder={
+                          selectedDataSource === "attom"
+                            ? "Enter address (format: street, city, state zip)..."
+                            : "Enter full property address..."
+                        }
+                        className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={propertyAddress}
+                        onChange={(e) => setPropertyAddress(e.target.value)}
+                      />
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    className={`px-4 py-2 text-white rounded-lg flex items-center gap-2 transition-colors ${
+                      selectedDataSource === "zillow"
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : selectedDataSource === "redfin"
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    }`}
+                    disabled={isSearchingProperty}
+                  >
+                    {isSearchingProperty ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Search Property
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+              
+              <div className="text-sm text-gray-500">
+                {selectedDataSource === "zillow" ? (
+                  <>
+                    <p>Search for property details and floor plans using the Zillow API.</p>
+                    <p className="mt-1">Example: "123 Main St, Anytown, CA 91411"</p>
+                  </>
+                ) : selectedDataSource === "redfin" ? (
+                  <>
+                    <p>Search for properties for sale or rent in a specific region using the Redfin API.</p>
+                    <p className="mt-1">Enter a Redfin region ID (e.g., "6_13410" for a specific area)</p>
+                    <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="bg-red-50 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-red-800">Rental Properties</span>
+                        <p className="text-xs text-gray-600">Find available rental properties</p>
+                      </div>
+                      <div className="bg-red-50 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-red-800">Properties for Sale</span>
+                        <p className="text-xs text-gray-600">Search homes currently on the market</p>
+                      </div>
+                      <div className="bg-red-50 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-red-800">Property Details</span>
+                        <p className="text-xs text-gray-600">Get detailed information about specific properties</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>Search for comprehensive property data, valuations, and sales history using the ATTOM API.</p>
+                    <p className="mt-1">Example: "123 Main St, Anytown, CA 91411"</p>
+                    <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="bg-purple-50 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-purple-800">Property Details</span>
+                        <p className="text-xs text-gray-600">Assessor data, tax info, and property characteristics</p>
+                      </div>
+                      <div className="bg-purple-50 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-purple-800">Automated Valuation</span>
+                        <p className="text-xs text-gray-600">ATTOM AVM with confidence scores</p>
+                      </div>
+                      <div className="bg-purple-50 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-purple-800">Sales History</span>
+                        <p className="text-xs text-gray-600">Historical transaction data with deed information</p>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      <p>ATTOM API provides comprehensive property data from over 155 million U.S. properties.</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -334,8 +500,10 @@ export default function MarketAnalysisPage() {
             </div>
           </div>
         ) : (
-          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm h-[800px] overflow-hidden flex flex-col">
-            <AiAgentChat context="market analysis" />
+          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm p-6">
+            <div className="h-[600px]">
+              <AiAgentChat context="market-analysis" />
+            </div>
           </div>
         )}
       </div>

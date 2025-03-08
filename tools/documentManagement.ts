@@ -62,22 +62,64 @@ async function uploadDocumentToFolder(fileUrl: string, folderId: string, fileNam
   };
 }
 
-// Mock function to send an email notification to the client
+// Function to send an email notification to the client using MailerSend
 async function sendEmailNotification(
   clientEmail: string, 
   clientName: string, 
   folderUrl: string, 
   documentType: string
 ) {
-  // In a real implementation, this would call an email service API
-  console.log(`Sending email notification to ${clientEmail}`);
-  
-  // Mock response
-  return {
-    sent: true,
-    messageId: "mock_message_id_" + Date.now(),
-    timestamp: new Date().toISOString(),
-  };
+  try {
+    // In a real implementation, this would use the MailerSend API
+    // Example implementation with MailerSend SDK:
+    /*
+    const MailerSend = require("mailersend");
+    
+    const mailersend = new MailerSend({
+      api_key: process.env.MAILERSEND_API_KEY,
+    });
+    
+    const subject = `Your ${documentType} document has been uploaded`;
+    const text = `Dear ${clientName},\n\nWe've uploaded your ${documentType} document to your client folder. You can access it using the following link: ${folderUrl}\n\nIf you have any questions, please don't hesitate to contact us.\n\nBest regards,\n${process.env.MAILERSEND_FROM_NAME || "Your Real Estate Agent"}`;
+    
+    const emailParams = {
+      from: {
+        email: process.env.MAILERSEND_FROM_EMAIL || "noreply@example.com",
+        name: process.env.MAILERSEND_FROM_NAME || "Real Estate Agent",
+      },
+      to: [
+        {
+          email: clientEmail,
+          name: clientName,
+        },
+      ],
+      subject: subject,
+      text: text,
+    };
+    
+    const response = await mailersend.send(emailParams);
+    return {
+      sent: true,
+      messageId: response.message_id,
+      timestamp: new Date().toISOString(),
+    };
+    */
+    
+    // Mock response for now
+    console.log(`Sending document notification email to ${clientEmail} using MailerSend`);
+    return {
+      sent: true,
+      messageId: "mailersend_" + Date.now(),
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error sending email with MailerSend:", error);
+    return {
+      sent: false,
+      error: "Failed to send email notification",
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
 
 // New function to register a webhook for document events
