@@ -1,174 +1,144 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Archive,
-  ArrowDown,
-  ArrowUp,
   Brain,
-  Clock,
-  Edit,
-  Filter,
-  Inbox,
   Mail,
   MailPlus,
-  Search,
-  Star,
-  Tag,
-  Trash,
-  X,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
 import AiAgentChat from "@/components/AiAgentChat";
+import { fetchEmails } from "@/actions/gmail";
+import EmailList from "@/components/email/EmailList";
+import EmailSidebar from "@/components/email/EmailSidebar";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
-// Mock data for emails
-const mockEmails = [
-  {
-    id: 1,
-    from: "John Smith",
-    email: "john.smith@example.com",
-    subject: "Interested in 123 Main St property",
-    preview:
-      "Hello, I saw your listing for 123 Main St and I'm very interested in scheduling a viewing. I'm particularly...",
-    date: "10:30 AM",
-    read: false,
-    starred: true,
-    category: "client",
-    priority: "high",
-  },
-  {
-    id: 2,
-    from: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    subject: "Questions about our offer",
-    preview:
-      "Hi, we submitted an offer for 456 Oak Ave yesterday and I wanted to follow up on a few questions regarding...",
-    date: "Yesterday",
-    read: true,
-    starred: true,
-    category: "client",
-    priority: "high",
-  },
-  {
-    id: 3,
-    from: "Michael Brown",
-    email: "michael.brown@example.com",
-    subject: "Inspection report for 789 Pine St",
-    preview:
-      "I've attached the inspection report for 789 Pine St. There are a few minor issues that need to be addressed...",
-    date: "Yesterday",
-    read: true,
-    starred: false,
-    category: "client",
-    priority: "medium",
-  },
-  {
-    id: 4,
-    from: "Real Estate Weekly",
-    email: "newsletter@realestateweekly.com",
-    subject: "This Week's Market Trends and New Listings",
-    preview:
-      "In this week's newsletter: Market trends show a 5% increase in home values in your area, plus 15 new listings...",
-    date: "Jun 12",
-    read: true,
-    starred: false,
-    category: "newsletter",
-    priority: "low",
-  },
-  {
-    id: 5,
-    from: "David Wilson",
-    email: "david.wilson@example.com",
-    subject: "Closing documents for 321 Elm St",
-    preview:
-      "Please find attached the closing documents for 321 Elm St. We need these signed and returned by Friday to proceed...",
-    date: "Jun 11",
-    read: false,
-    starred: true,
-    category: "client",
-    priority: "high",
-  },
-  {
-    id: 6,
-    from: "Property Management Inc.",
-    email: "info@propertymanagement.com",
-    subject: "Monthly rental property report",
-    preview:
-      "Here is your monthly report for your rental properties. All units are currently occupied with rent payments up to date...",
-    date: "Jun 10",
-    read: true,
-    starred: false,
-    category: "management",
-    priority: "medium",
-  },
-  {
-    id: 7,
-    from: "City Planning Department",
-    email: "planning@citygovernment.org",
-    subject: "Zoning changes in Downtown district",
-    preview:
-      "This is to inform all registered real estate professionals about upcoming zoning changes in the Downtown district that may affect...",
-    date: "Jun 9",
-    read: true,
-    starred: false,
-    category: "administrative",
-    priority: "medium",
-  },
-];
+// Helper function to determine email category
+function determineCategory(email: any) {
+  const from = email.from?.toLowerCase() || '';
+  const subject = email.subject?.toLowerCase() || '';
+  
+  if (from.includes("newsletter") || from.includes("weekly") || from.includes("update")) {
+    return "newsletter";
+  } else if (subject.includes("property") || subject.includes("listing") || subject.includes("offer")) {
+    return "client";
+  } else if (subject.includes("report") || subject.includes("management")) {
+    return "management";
+  } else {
+    return "administrative";
+  }
+}
 
-// Category and priority colors
-const categoryColors = {
-  client: "bg-blue-100 text-blue-800",
-  newsletter: "bg-green-100 text-green-800",
-  management: "bg-purple-100 text-purple-800",
-  administrative: "bg-gray-100 text-gray-800",
-};
-
-const priorityColors = {
-  high: "bg-red-100 text-red-800",
-  medium: "bg-yellow-100 text-yellow-800",
-  low: "bg-green-100 text-green-800",
-};
+// Helper function to determine email priority
+function determinePriority(email: any) {
+  const subject = email.subject?.toLowerCase() || '';
+  
+  if (subject.includes("urgent") || subject.includes("important") || subject.includes("offer")) {
+    return "high";
+  } else if (subject.includes("update") || subject.includes("question")) {
+    return "medium";
+  } else {
+    return "low";
+  }
+}
 
 export default function EmailPage() {
+  const { isLoaded: isAuthLoaded, userId } = useAuth();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [sortBy, setSortBy] = useState<"date" | "priority">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [emails, setEmails] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // Use the useGoogleAuth hook instead of managing state directly
+  const { 
+    isAuthenticated: isGoogleAuthenticated, 
+    isLoading: isGoogleAuthLoading, 
+    error: googleAuthError,
+    connectGoogle
+  } = useGoogleAuth();
 
-  // Filter emails based on search term, category, and priority
-  const filteredEmails = mockEmails
-    .filter(
-      (email) =>
-        email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        email.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        email.preview.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(
-      (email) => !selectedCategory || email.category === selectedCategory
-    )
-    .filter(
-      (email) => !selectedPriority || email.priority === selectedPriority
-    )
-    .sort((a, b) => {
-      if (sortBy === "date") {
-        // Simple sort for demo purposes
-        return sortDirection === "desc"
-          ? b.id - a.id
-          : a.id - b.id;
+  // Check for URL parameters
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setSuccessMessage(null);
+      setError(errorParam);
+    }
+    
+    const googleConnected = searchParams.get('google_connected');
+    if (googleConnected === 'true') {
+      setError(null);
+      setSuccessMessage('Successfully connected to Google!');
+      
+      // Refresh the page after 3 seconds to check Google auth status
+      setTimeout(() => {
+        window.location.href = '/email';
+      }, 3000);
+    }
+  }, [searchParams]);
+
+  // Fetch emails when the component mounts
+  useEffect(() => {
+    if (isGoogleAuthenticated) {
+      fetchEmailData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [isGoogleAuthenticated]);
+
+  // Function to fetch email data
+  const fetchEmailData = async () => {
+    if (!isGoogleAuthenticated) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await fetchEmails(50);
+      
+      if (result.success) {
+        // Process emails to add category and priority
+        const processedEmails = result.emails.map((email: any) => ({
+          ...email,
+          category: determineCategory(email),
+          priority: determinePriority(email),
+          read: !email.labelIds?.includes('UNREAD'),
+          starred: email.labelIds?.includes('STARRED'),
+        }));
+        
+        setEmails(processedEmails);
       } else {
-        // Priority sort
-        const priorityValues = { high: 3, medium: 2, low: 1 };
-        const priorityA = priorityValues[a.priority as keyof typeof priorityValues];
-        const priorityB = priorityValues[b.priority as keyof typeof priorityValues];
-        return sortDirection === "desc"
-          ? priorityB - priorityA
-          : priorityA - priorityB;
+        setError(result.error || 'Failed to fetch emails');
       }
-    });
+    } catch (error) {
+      console.error('Error fetching emails:', error);
+      setError('An error occurred while fetching emails');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchEmailData();
+  };
+
+  // Toggle sort
   const toggleSort = (type: "date" | "priority") => {
     if (sortBy === type) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -177,6 +147,66 @@ export default function EmailPage() {
       setSortDirection("desc");
     }
   };
+
+  // Calculate counts
+  const unreadCount = emails.filter(email => !email.read).length;
+  const starredCount = emails.filter(email => email.starred).length;
+
+  // Show loading state while checking authentication
+  if (!isAuthLoaded || isGoogleAuthLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Google authentication prompt if not authenticated
+  if (!isGoogleAuthenticated) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Email Management</h1>
+            <p className="text-gray-600 mt-2">
+              Connect your Google account to access your emails
+            </p>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+          <div className="mb-6">
+            <Mail className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Google Account</h2>
+            <p className="text-gray-600 mb-6">
+              To access your emails, you need to connect your Google account. This will allow the application to read and manage your emails.
+            </p>
+            {googleAuthError && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{googleAuthError}</span>
+              </div>
+            )}
+            {successMessage && (
+              <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{successMessage}</span>
+              </div>
+            )}
+            <button
+              onClick={connectGoogle}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors mx-auto"
+            >
+              <Mail className="w-5 h-5" />
+              Connect Google Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -188,6 +218,15 @@ export default function EmailPage() {
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg flex items-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50"
+            title="Refresh emails"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
           <button
             onClick={() => setShowAIAssistant(!showAIAssistant)}
             className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg flex items-center gap-2 hover:bg-blue-200 transition-colors"
@@ -208,275 +247,32 @@ export default function EmailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <div className="space-y-1 mb-6">
-              <button className="w-full flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium">
-                <Inbox className="w-4 h-4" />
-                <span>Inbox</span>
-                <span className="ml-auto bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full text-xs">
-                  2
-                </span>
-              </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-700">
-                <Star className="w-4 h-4" />
-                <span>Starred</span>
-                <span className="ml-auto bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-xs">
-                  3
-                </span>
-              </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-700">
-                <Clock className="w-4 h-4" />
-                <span>Snoozed</span>
-              </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-700">
-                <Archive className="w-4 h-4" />
-                <span>Archived</span>
-              </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-700">
-                <Trash className="w-4 h-4" />
-                <span>Trash</span>
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="font-medium text-sm text-gray-500 mb-2 px-3">
-                CATEGORIES
-              </h3>
-              <div className="space-y-1">
-                <button
-                  onClick={() =>
-                    setSelectedCategory(
-                      selectedCategory === "client" ? null : "client"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedCategory === "client"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Tag className="w-4 h-4" />
-                  <span>Clients</span>
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedCategory(
-                      selectedCategory === "newsletter" ? null : "newsletter"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedCategory === "newsletter"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Tag className="w-4 h-4" />
-                  <span>Newsletters</span>
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedCategory(
-                      selectedCategory === "management" ? null : "management"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedCategory === "management"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Tag className="w-4 h-4" />
-                  <span>Management</span>
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedCategory(
-                      selectedCategory === "administrative"
-                        ? null
-                        : "administrative"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedCategory === "administrative"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <Tag className="w-4 h-4" />
-                  <span>Administrative</span>
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-medium text-sm text-gray-500 mb-2 px-3">
-                PRIORITY
-              </h3>
-              <div className="space-y-1">
-                <button
-                  onClick={() =>
-                    setSelectedPriority(
-                      selectedPriority === "high" ? null : "high"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedPriority === "high"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  <span>High Priority</span>
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedPriority(
-                      selectedPriority === "medium" ? null : "medium"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedPriority === "medium"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                  <span>Medium Priority</span>
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedPriority(
-                      selectedPriority === "low" ? null : "low"
-                    )
-                  }
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                    selectedPriority === "low"
-                      ? "bg-blue-50 text-blue-800"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span>Low Priority</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <EmailSidebar
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            selectedPriority={selectedPriority}
+            setSelectedPriority={setSelectedPriority}
+            unreadCount={unreadCount}
+            starredCount={starredCount}
+          />
         </div>
 
         {/* Main Content */}
         {!showAIAssistant ? (
           <div className="lg:col-span-3">
-            <div className="flex justify-between items-center mb-6">
-              <div className="relative w-full max-w-md">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search emails..."
-                  className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <button
-                  onClick={() => toggleSort("date")}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
-                >
-                  <Clock className="w-4 h-4" />
-                  <span>Date</span>
-                  {sortBy === "date" && (
-                    <span>
-                      {sortDirection === "desc" ? (
-                        <ArrowDown className="w-3 h-3" />
-                      ) : (
-                        <ArrowUp className="w-3 h-3" />
-                      )}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => toggleSort("priority")}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
-                >
-                  <Filter className="w-4 h-4" />
-                  <span>Priority</span>
-                  {sortBy === "priority" && (
-                    <span>
-                      {sortDirection === "desc" ? (
-                        <ArrowDown className="w-3 h-3" />
-                      ) : (
-                        <ArrowUp className="w-3 h-3" />
-                      )}
-                    </span>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {filteredEmails.map((email) => (
-                <div
-                  key={email.id}
-                  className={`p-3 border ${
-                    email.read ? "border-gray-100" : "border-blue-200 bg-blue-50"
-                  } rounded-lg hover:border-blue-300 transition-colors cursor-pointer`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
-                        {email.from.charAt(0)}
-                      </div>
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium truncate">{email.from}</span>
-                        <span className="text-xs text-gray-500">{email.date}</span>
-                        {email.starred && (
-                          <Star className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-                        )}
-                      </div>
-                      <div className="font-medium text-sm mb-1 truncate">
-                        {email.subject}
-                      </div>
-                      <div className="text-sm text-gray-600 truncate">
-                        {email.preview}
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            categoryColors[
-                              email.category as keyof typeof categoryColors
-                            ]
-                          }`}
-                        >
-                          {email.category}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            priorityColors[
-                              email.priority as keyof typeof priorityColors
-                            ]
-                          }`}
-                        >
-                          {email.priority} priority
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0 flex gap-1">
-                      <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-                        <Archive className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-                        <Trash className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <EmailList
+              emails={emails}
+              isLoading={isLoading}
+              error={error}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedCategory={selectedCategory}
+              selectedPriority={selectedPriority}
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              toggleSort={toggleSort}
+              onRefresh={fetchEmailData}
+            />
           </div>
         ) : (
           <div className="lg:col-span-3 bg-white rounded-xl shadow-sm h-[800px] overflow-hidden flex flex-col">

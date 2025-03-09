@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         hostname: "acoustic-orca-473.convex.cloud",
         protocol: "https",
       },
+      {
+        hostname: "quickchart.io",
+        protocol: "https",
+      },
     ],
   },
 };

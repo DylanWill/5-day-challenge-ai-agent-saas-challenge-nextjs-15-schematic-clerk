@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Sparkles,
   BarChart3,
+  Home as HomeIcon,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -98,7 +99,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center gap-10 text-center mb-12">
             <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full flex items-center justify-center">
-              <Brain className="w-10 h-10 text-white" />
+              <HomeIcon className="w-10 h-10 text-white" />
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">

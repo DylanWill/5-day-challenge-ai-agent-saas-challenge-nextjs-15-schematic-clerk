@@ -83,8 +83,7 @@ export default function ReportsPage() {
   // Filter reports based on search term and type
   const filteredReports = mockReports.filter(
     (report) =>
-      (report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        report.client.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      report.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (!selectedType || report.type === selectedType)
   );
 
@@ -92,9 +91,9 @@ export default function ReportsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Client Reports</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
           <p className="text-gray-600 mt-2">
-            Create and manage professional reports for your clients
+            Create and manage property reports and market analyses
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex gap-2">
@@ -111,6 +110,13 @@ export default function ReportsPage() {
           >
             <Plus className="w-4 h-4" />
             New Report
+          </Link>
+          <Link
+            href="/reports/charts-demo"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Chart Types
           </Link>
         </div>
       </div>
@@ -202,23 +208,7 @@ export default function ReportsPage() {
                   }`}
                 >
                   <BarChart3 className="w-4 h-4" />
-                  <span>Buyer Recommendations</span>
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-medium text-sm text-gray-500 mb-2 px-3">
-                QUICK ACTIONS
-              </h3>
-              <div className="space-y-1">
-                <button className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-700">
-                  <Download className="w-4 h-4" />
-                  <span>Download All Reports</span>
-                </button>
-                <button className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-700">
-                  <Mail className="w-4 h-4" />
-                  <span>Email Selected Reports</span>
+                  <span>Buyer Recommendation</span>
                 </button>
               </div>
             </div>
@@ -280,11 +270,13 @@ export default function ReportsPage() {
             </div>
           </div>
         ) : (
-          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm h-[800px] overflow-hidden flex flex-col">
-            <AiAgentChat context="property reports" />
+          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm p-6">
+            <div className="h-[600px]">
+              <AiAgentChat context="property reports" />
+            </div>
           </div>
         )}
       </div>
     </div>
   );
-} 
+}

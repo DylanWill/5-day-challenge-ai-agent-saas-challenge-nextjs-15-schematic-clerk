@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
-import { Calendar, BarChart3, FileText, Mail, Home, Brain, LayoutDashboard, Settings } from "lucide-react";
+import { Calendar, BarChart3, FileText, Mail, Home as HomeIcon, Brain, LayoutDashboard, Settings } from "lucide-react";
 
 function Header() {
   const pathname = usePathname();
@@ -21,7 +21,7 @@ function Header() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full flex items-center justify-center">
-                <Brain className="w-4 h-4 text-white" />
+                <HomeIcon className="w-4 h-4 text-white" />
               </div>
               <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
                 RealEstateAI
@@ -37,7 +37,7 @@ function Header() {
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                <Home className="w-4 h-4" />
+                <HomeIcon className="w-4 h-4" />
                 <span>Home</span>
               </Link>
               <Link
@@ -63,9 +63,9 @@ function Header() {
                 <span>Calendar</span>
               </Link>
               <Link
-                href="/emails"
+                href="/email"
                 className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/emails")
+                  isActive("/email")
                     ? "bg-blue-50 text-blue-700"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
