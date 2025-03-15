@@ -8,6 +8,7 @@ import { Calendar, BarChart3, FileText, Mail, Home as HomeIcon, Brain, LayoutDas
 
 function Header() {
   const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -28,85 +29,88 @@ function Header() {
               </h1>
             </Link>
 
-            <nav className="hidden md:flex ml-10 space-x-1">
-              <Link
-                href="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <HomeIcon className="w-4 h-4" />
-                <span>Home</span>
-              </Link>
-              <Link
-                href="/dashboard"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/dashboard")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Dashboard</span>
-              </Link>
-              <Link
-                href="/calendar"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/calendar")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Calendar</span>
-              </Link>
-              <Link
-                href="/email"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/email")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <Mail className="w-4 h-4" />
-                <span>Emails</span>
-              </Link>
-              <Link
-                href="/market-analysis"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/market-analysis")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Market Analysis</span>
-              </Link>
-              <Link
-                href="/documents"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/documents")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Documents</span>
-              </Link>
-              <Link
-                href="/reports"
-                className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
-                  isActive("/reports")
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Reports</span>
-              </Link>
-            </nav>
+            {/* Only show navigation tabs when not on the home page */}
+            {!isHomePage && (
+              <nav className="hidden md:flex ml-10 space-x-1">
+                <Link
+                  href="/"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span>Home</span>
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/dashboard")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/calendar"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/calendar")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Calendar</span>
+                </Link>
+                <Link
+                  href="/email"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/email")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Emails</span>
+                </Link>
+                <Link
+                  href="/market-analysis"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/market-analysis")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Market Analysis</span>
+                </Link>
+                <Link
+                  href="/documents"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/documents")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Documents</span>
+                </Link>
+                <Link
+                  href="/reports"
+                  className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1.5 ${
+                    isActive("/reports")
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Reports</span>
+                </Link>
+              </nav>
+            )}
           </div>
 
           {/* Right */}
